@@ -1,3 +1,5 @@
+from langchain_core.messages import SystemMessage
+
 from src.agent.state import AgentState
 from src.llm.openai import LLMClient
 from src.tools.memory import memory_service
