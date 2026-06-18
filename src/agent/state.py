@@ -1,7 +1,6 @@
 from typing import TypedDict
 
-
-from typing import TypedDict, List
+from langchain_core.messages import BaseMessage
 
 
 class Message(TypedDict):
@@ -10,5 +9,4 @@ class Message(TypedDict):
 
 
 class AgentState(TypedDict):
-    messages: List[Message]
-    response: str | None
+    messages: list[BaseMessage]

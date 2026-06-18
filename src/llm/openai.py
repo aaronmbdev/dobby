@@ -1,3 +1,4 @@
+from langchain_core.messages import AIMessage, BaseMessage
 from openai import OpenAI
 
 from src.config.settings import settings
@@ -11,21 +12,33 @@ class LLMClient:
         )
 
 
-    def chat(self, message: str) -> str:
+    def chat(
+        self,
+        messages: list[BaseMessage]
+    ) -> AIMessage:
 
         response = self.client.chat.completions.create(
             model=settings.openai_model,
             messages=[
                 {
-                    "role": "system",
-                    "content":
-                    "You are Jarvis, a helpful personal assistant."
-                },
-                {
-                    "role": "user",
-                    "content": message
+                    "role": self._map_role(message),
+                    "content": message.content
                 }
+                for message in messages
             ]
         )
 
-        return response.choices[0].message.content
+        return AIMessage(
+            content=response.choices[0].message.content
+        )
+
+
+    def _map_role(
+        self,
+        message: BaseMessage
+    ) -> str:
+
+        if isinstance(message, AIMessage):
+            return "assistant"
+
+        return "user"

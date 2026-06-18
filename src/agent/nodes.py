@@ -1,12 +1,15 @@
+from src.agent.state import AgentState
 from src.llm.openai import LLMClient
 
 
-def answer_node(state: dict):
+def answer_node(state: AgentState) -> AgentState:
     llm = LLMClient()
-    last_message = state["messages"][-1]["content"]
-
-    response = llm.chat(last_message)
+    response = llm.chat(
+        state["messages"]
+    )
 
     return {
-        "response": response
+        "messages": [
+            response
+        ]
     }
