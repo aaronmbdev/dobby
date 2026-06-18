@@ -1,8 +1,7 @@
-from typing import List
-
 from langchain_core.messages import HumanMessage
 
 from src.agent.graph import jarvis_graph
+from src.agent.prompts import DOBBY_SYSTEM
 from src.common.models import Message
 
 
@@ -11,14 +10,16 @@ class ChatService:
         self,
         messages: list[Message]
     ) -> str:
-
         result = jarvis_graph.invoke(
             {
                 "messages": [
-                    HumanMessage(
-                        content=message.content
-                    )
-                    for message in messages
+                    DOBBY_SYSTEM,
+                    *[
+                        HumanMessage(
+                            content=message.content
+                        )
+                        for message in messages
+                    ]
                 ]
             }
         )

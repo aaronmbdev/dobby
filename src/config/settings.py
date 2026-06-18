@@ -8,8 +8,8 @@ class Settings(BaseSettings):
     homeassistant_url: str = "https://homeassistant.aaronbotton.dev"
     homeassistant_token: str
 
-    postgres_url: str = (
-        "postgresql://jarvis:jarvis@localhost:5432/jarvis"
+    database_url: str = (
+        "postgresql+psycopg://jarvis:jarvis@localhost:5432/jarvis"
     )
 
     class Config:
