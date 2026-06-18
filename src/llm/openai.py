@@ -1,36 +1,36 @@
-from langchain_core.messages import AIMessage, BaseMessage
-from openai import OpenAI
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+)
+
 
 from src.config.settings import settings
-
 
 class LLMClient:
 
     def __init__(self):
-        self.client = OpenAI(
-            api_key=settings.openai_api_key
+        self.client = ChatOpenAI(
+            api_key=settings.openai_api_key,
+            temperature=0
         )
+
+    def with_tools(self, tools):
+        return self.client.bind_tools(tools)
 
 
     def chat(
         self,
-        messages: list[BaseMessage]
+        messages: list[BaseMessage],
+        tools=None
     ) -> AIMessage:
 
-        response = self.client.chat.completions.create(
-            model=settings.openai_model,
-            messages=[
-                {
-                    "role": self._map_role(message),
-                    "content": message.content
-                }
-                for message in messages
-            ]
-        )
+        llm = self.client
 
-        return AIMessage(
-            content=response.choices[0].message.content
-        )
+        if tools:
+            llm = llm.bind_tools(tools)
+
+        return llm.invoke(messages)
 
 
     def _map_role(

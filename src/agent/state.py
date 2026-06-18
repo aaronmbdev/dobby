@@ -1,12 +1,7 @@
-from typing import TypedDict
+from typing import TypedDict, Annotated
 
 from langchain_core.messages import BaseMessage
-
-
-class Message(TypedDict):
-    role: str
-    content: str
-
+from langgraph.graph.message import add_messages
 
 class AgentState(TypedDict):
-    messages: list[BaseMessage]
+    messages: Annotated[list[BaseMessage], add_messages]
