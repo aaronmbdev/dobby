@@ -1,16 +1,21 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
+
 from src.api.chat import router
+from src.memory.database import engine
 
 
-app = FastAPI(
-    title="Jarvis Agent"
-)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    with engine.connect():
+        pass
+    yield
 
 
-app.include_router(
-    router,
-    prefix="/api"
-)
+app = FastAPI(title="Jarvis Agent", lifespan=lifespan)
+
+app.include_router(router, prefix="/api")
 
 
 @app.get("/health")

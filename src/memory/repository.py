@@ -6,40 +6,16 @@ from src.memory.models import Memory
 
 class MemoryRepository:
 
-
-    def save(
-        self,
-        content: str
-    ) -> None:
-
+    def save(self, content: str, embedding: list[float]) -> None:
         with SessionLocal() as session:
-
-            session.add(
-                Memory(
-                    content=content
-                )
-            )
-
+            session.add(Memory(content=content, embedding=embedding))
             session.commit()
 
-
-    def search(
-        self,
-        query: str
-    ) -> list[str]:
-
+    def search(self, embedding: list[float], limit: int = 5) -> list[str]:
         with SessionLocal() as session:
-
             result = session.execute(
                 select(Memory)
-                .where(
-                    Memory.content.ilike(
-                        f"%{query}%"
-                    )
-                )
+                .order_by(Memory.embedding.cosine_distance(embedding))
+                .limit(limit)
             )
-
-            return [
-                memory.content
-                for memory in result.scalars().all()
-            ]
+            return [memory.content for memory in result.scalars().all()]

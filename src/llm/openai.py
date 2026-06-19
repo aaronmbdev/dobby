@@ -5,12 +5,13 @@ from src.config.settings import settings
 
 class LLMClient:
 
-    def __init__(self):
-        self.client = ChatOpenAI(
+    def __init__(self, tools=None):
+        client = ChatOpenAI(
             api_key=settings.openai_api_key,
             model=settings.openai_model,
             temperature=0,
         )
+        self._llm = client.bind_tools(tools) if tools else client
 
-    def with_tools(self, tools):
-        return self.client.bind_tools(tools)
+    def invoke(self, messages):
+        return self._llm.invoke(messages)
