@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     homeassistant_url: str = "https://homeassistant.aaronbotton.dev"
     homeassistant_token: str
 
+    finances_url: str = "https://finances.aaronbotton.dev"
+
     database_url: str = (
         "postgresql+psycopg://jarvis:jarvis@localhost:5432/jarvis"
     )
