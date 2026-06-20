@@ -15,6 +15,7 @@ class TestDietAppClient(TestCase):
         metrics = client.get_body_metrics()
         assert isinstance(metrics, dict)
 
+
     def test_get_daily_log(self):
         client = DietAppClient()
         test_date = "2026-06-18"

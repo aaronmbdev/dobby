@@ -1,4 +1,6 @@
+from src.integrations.exceptions import IntegrationException
 
-class FinanceIntegrationError(Exception):
+
+class FinanceIntegrationError(IntegrationException):
     """Base exception for finance integration errors."""
     pass

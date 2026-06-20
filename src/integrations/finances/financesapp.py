@@ -2,6 +2,8 @@ import httpx
 
 from src.config.settings import settings
 from src.integrations.finances.exceptions import FinanceIntegrationError
+from src.integrations.finances.models import Account, Stock, Fund, NetWorthSnapshot, FinanceHealthMetrics, \
+    MonthlyReport, ReportOverview, ReportIncome, ReportExpense
 
 
 class FinancesAppClient:
@@ -17,88 +19,69 @@ class FinancesAppClient:
         )
 
 
-    def get_accounts(self) -> dict:
-        """
-        Fetches the list of accounts from the FinancesApp API.
-        :return: A list of dicts with: description, id, latestBalance, latestBalanceDate, name
-        """
+    def get_accounts(self) -> list[Account]:
         try:
-            return self._make_get_request("/api/v1/accounts")
+            data = self._make_get_request("/api/v1/accounts")
+            return [Account(**item) for item in data]
         except httpx.HTTPError as e:
             raise FinanceIntegrationError(f"Error fetching accounts: {e}") from e
 
 
-    def get_stocks(self):
-        """
-        Fetches the list of stocks from the FinancesApp API.
-        :return: A list of dicts with id, latestDate, latestPriceEur, latestShares, name, ticker
-        """
+    def get_stocks(self) -> list[Stock]:
         try:
-            return self._make_get_request("/api/v1/investments/stocks")
+            data = self._make_get_request("/api/v1/investments/stocks")
+            return [Stock(**item) for item in data]
         except httpx.HTTPError as e:
             raise FinanceIntegrationError(f"Error fetching stocks: {e}") from e
 
 
-    def get_investment_funds(self):
-        """
-        Fetches the list of investment funds from the FinancesApp API.
-        :return: A list of dicts with id, isin, latestDate, latestPriceEur, latestShares, name, yahooticker
-        """
+    def get_investment_funds(self) -> list[Fund]:
         try:
-            return self._make_get_request("/api/v1/investments/funds")
+            data = self._make_get_request("/api/v1/investments/funds")
+            return [Fund(**item) for item in data]
         except httpx.HTTPError as e:
             raise FinanceIntegrationError(f"Error fetching investment funds: {e}") from e
 
 
-    def get_net_worth_history(self):
-        """
-        Fetches the net worth history from the FinancesApp API.
-        :return: A list of dicts with date, accountsTotal, fundsTotal, stocksTotal, total
-        """
+    def get_net_worth_history(self) -> list[NetWorthSnapshot]:
         try:
-            return self._make_get_request("/api/v1/networth/history")
+            data = self._make_get_request("/api/v1/networth/history")
+            return [NetWorthSnapshot(**item) for item in data]
         except httpx.HTTPError as e:
             raise FinanceIntegrationError(f"Error fetching net worth history: {e}") from e
 
 
-    def get_health_metrics(self):
-        """
-        Fetches the health metrics from the FinancesApp API.
-        :return: A dict with various metrics:
-        averageMonthlyIncome, essentialMonthlyBurn, totalAccountBalance, totalMonthlyBurn
-        debtToIncome(structure with currentValue, healthLevel, history(month, value))
-        emergencyFund(structure with currentValue, healthLevel, history(month, value))
-        expenseDistribution(structure with categoryName, averageMonthly)
-        expenseGrowthRate(structure with currentValue, healthLevel, history(month, value))
-        fixedVsVariable(structure with currentValue, healthLevel, history(month, value))
-        housingRatio(structure with currentValue, healthLevel, history(month, value))
-        investmentRatio(structure with currentValue, healthLevel, history(month, value))
-        savingsRate(structure with currentValue, healthLevel, history(month, value))
-        """
+    def get_health_metrics(self) -> FinanceHealthMetrics:
         try:
-            return self._make_get_request("/api/v1/health-metrics")
+            data = self._make_get_request("/api/v1/health-metrics")
+            return FinanceHealthMetrics(**data)
         except httpx.HTTPError as e:
             raise FinanceIntegrationError(f"Error fetching health metrics: {e}") from e
 
 
-    def get_report_by_date(self, date: str):
-        """
-        Fetches the report for a specific date from the FinancesApp API.
-        :param date: The date in YYYY-MM format.
-        :return: struct(data, hasData)
-        In data: categories, expenses, income, overview
-        categories(dict with name, totalExpensed)
-        expenses(list of dicts with date, period, description, categoryId, amount)
-        income(list of dicts with liquido)
-        overview(list of dicts with balance, monthlyExpenses, monthlyIncome)
-        """
+    def get_report_by_month(self, date: str):
         try:
-            return self._make_get_request(f"/api/v1/reports/{date}")
+            data = self._make_get_request(f"/api/v1/report", params={"date": date})
+            if not data.get("hasData"):
+                raise FinanceIntegrationError(f"No report data available for {date}")
+            result = data.get("data")
+            return MonthlyReport(
+                categories=result["categories"],
+                expenses=[
+                    ReportExpense(**expense)
+                    for expense in result["expenses"]
+                ],
+                income=[
+                    ReportIncome(**income)
+                    for income in result["income"]
+                ],
+                overview=ReportOverview(**result["overview"]),
+            )
         except httpx.HTTPError as e:
             raise FinanceIntegrationError(f"Error fetching report for {date}: {e}") from e
 
 
-    def _make_get_request(self, endpoint: str) -> dict:
-        response = self.client.get(endpoint)
+    def _make_get_request(self, endpoint: str, params: dict = None) -> dict:
+        response = self.client.get(endpoint, params=params)
         response.raise_for_status()
         return response.json()
