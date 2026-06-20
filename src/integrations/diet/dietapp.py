@@ -1,5 +1,8 @@
 import httpx
 from datetime import datetime
+
+from openai.types.fine_tuning.jobs.fine_tuning_job_checkpoint import Metrics
+
 from src.config.settings import settings
 from src.integrations.diet.exceptions import DietIntegrationError
 
@@ -15,20 +18,12 @@ class DietAppClient:
             follow_redirects=True,
         )
 
-    def get_app_health(self):
-        try:
-            return self._make_get_request("/api/health", {})
-        except httpx.HTTPError as e:
-            raise DietIntegrationError(f"Error fetching health: {e}") from e
-
-
-    def get_daily_log(self, from_date: str = None, to_date: str = None):
-        if from_date is None or to_date is None:
-            from_date = datetime.today().strftime('%Y-%m-%d')
-            to_date = datetime.today().strftime('%Y-%m-%d')
+    def get_daily_log(self, date: str = None):
+        if date is None:
+            date = datetime.today().strftime('%Y-%m-%d')
         endpoint = f"/api/daily-logs"
         try:
-            return self._make_get_request(endpoint, {"profileId": self.profile_id, "date": to_date})
+            return self._make_get_request(endpoint, {"profileId": self.profile_id, "date": date})
         except httpx.HTTPError as e:
             raise DietIntegrationError(f"Error fetching daily log: {e}") from e
 
@@ -36,12 +31,16 @@ class DietAppClient:
     def get_body_metrics(self):
         endpoint = f"/api/body-metrics"
         try:
-            return self._make_get_request(endpoint, {"profileId": self.profile_id})
+            data = self._make_get_request(endpoint, {"profileId": self.profile_id})
+            metrics = data.get("metrics")
+            if not metrics:
+                raise DietIntegrationError("No body metrics found for the given profile.")
+            return [Metrics(**metric) for metric in metrics]
         except httpx.HTTPError as e:
             raise DietIntegrationError(f"Error fetching body metrics: {e}") from e
 
 
-    def _make_get_request(self, url: str, params: dict) -> httpx.Response:
+    def _make_get_request(self, url: str, params: dict) -> dict:
         response = self.client.get(url, params=params)
         response.raise_for_status()
         return response.json()
