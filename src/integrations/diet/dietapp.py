@@ -5,6 +5,7 @@ from openai.types.fine_tuning.jobs.fine_tuning_job_checkpoint import Metrics
 
 from src.config.settings import settings
 from src.integrations.diet.exceptions import DietIntegrationError
+from src.integrations.diet.models import DayLog, Macros, Meal, Food
 
 
 class DietAppClient:
@@ -18,17 +19,37 @@ class DietAppClient:
             follow_redirects=True,
         )
 
-    def get_daily_log(self, date: str = None):
+    def get_daily_log(self, date: str = None) -> DayLog:
         if date is None:
             date = datetime.today().strftime('%Y-%m-%d')
         endpoint = f"/api/daily-logs"
         try:
-            return self._make_get_request(endpoint, {"profileId": self.profile_id, "date": date})
+            data = self._make_get_request(endpoint, {"profileId": self.profile_id, "date": date})
+            target = Macros(**data["target"])
+            meals = [
+                Meal(
+                    foods=[
+                        Food(
+                            name=food["name"],
+                            grams=food["grams"],
+                            macros=Macros(**food["macros"])
+                        )
+                        for food in meal["foods"]
+                    ],
+                    total_macros=Macros(**meal["total_macros"])
+                )
+                for meal in data["meals"]
+            ]
+            return DayLog(
+                date=data["date"],
+                target=target,
+                meals=meals
+            )
         except httpx.HTTPError as e:
             raise DietIntegrationError(f"Error fetching daily log: {e}") from e
 
 
-    def get_body_metrics(self):
+    def get_body_metrics(self) -> list[Metrics]:
         endpoint = f"/api/body-metrics"
         try:
             data = self._make_get_request(endpoint, {"profileId": self.profile_id})

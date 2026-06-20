@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from src.integrations.diet.dietapp import DietAppClient
+from src.integrations.diet.models import DayLog
 
 
 class TestDietAppClient(TestCase):
@@ -15,4 +16,4 @@ class TestDietAppClient(TestCase):
         client = DietAppClient()
         test_date = "2026-06-18"
         daily_log = client.get_daily_log(test_date)
-        assert isinstance(daily_log, dict)
+        assert isinstance(daily_log, DayLog)
