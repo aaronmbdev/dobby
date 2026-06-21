@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/your-org/dobby
+  repository: ghcr.io/aaronmbdev/dobby
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -10,15 +10,11 @@ service:
   port: 80
   targetPort: 8000
 
-# All sensitive values — override these via --set or an external secret manager.
-# Do NOT commit real values here.
-secrets:
-  databaseUrl: ""               # postgresql+psycopg://user:pass@host:5432/db
-  openaiApiKey: ""
-  homeassistantToken: ""
-  resendApiKey: ""
-  resendFromEmail: ""
-  resendToEmail: ""
+# Name of a pre-existing Kubernetes Secret in the same namespace.
+# The chart does NOT create this secret — it must already exist in the cluster.
+# Expected keys: DATABASE_URL, OPENAI_API_KEY, HOMEASSISTANT_TOKEN,
+#                RESEND_API_KEY, RESEND_FROM_EMAIL, RESEND_TO_EMAIL
+existingSecret: "dobby-secrets"
 
 # Non-sensitive configuration
 config:

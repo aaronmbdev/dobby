@@ -23,7 +23,7 @@ spec:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "dobby.fullname" . }}
+                  name: {{ .Values.existingSecret }}
                   key: DATABASE_URL
 
       containers:
@@ -36,7 +36,7 @@ spec:
             - configMapRef:
                 name: {{ include "dobby.fullname" . }}
             - secretRef:
-                name: {{ include "dobby.fullname" . }}
+                name: {{ .Values.existingSecret }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           livenessProbe:
