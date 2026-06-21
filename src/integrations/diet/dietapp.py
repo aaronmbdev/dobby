@@ -1,11 +1,9 @@
 import httpx
 from datetime import datetime
 
-from openai.types.fine_tuning.jobs.fine_tuning_job_checkpoint import Metrics
-
 from src.config.settings import settings
 from src.integrations.diet.exceptions import DietIntegrationError
-from src.integrations.diet.models import DayLog, Macros, Meal, Food
+from src.integrations.diet.models import DayLog, Macros, Meal, Food, BodyMetric
 
 
 class DietAppClient:
@@ -49,14 +47,14 @@ class DietAppClient:
             raise DietIntegrationError(f"Error fetching daily log: {e}") from e
 
 
-    def get_body_metrics(self) -> list[Metrics]:
+    def get_body_metrics(self) -> list[BodyMetric]:
         endpoint = f"/api/body-metrics"
         try:
             data = self._make_get_request(endpoint, {"profileId": self.profile_id})
             metrics = data.get("metrics")
             if not metrics:
                 raise DietIntegrationError("No body metrics found for the given profile.")
-            return [Metrics(**metric) for metric in metrics]
+            return [BodyMetric(**metric) for metric in metrics]
         except httpx.HTTPError as e:
             raise DietIntegrationError(f"Error fetching body metrics: {e}") from e
 
