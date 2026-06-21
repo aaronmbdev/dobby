@@ -93,6 +93,8 @@ class GoogleCalendarClient:
             ).execute()
         except HttpError as e:
             raise GoogleCalendarError(f"API error fetching day events: {e}") from e
+        except OSError as e:
+            raise GoogleCalendarError(f"Network error fetching day events: {e}") from e
         return [self._parse_event(e) for e in result.get("items", [])]
 
     def get_events_for_week(self, start_date_str: str) -> list[CalendarEvent]:
@@ -109,6 +111,8 @@ class GoogleCalendarClient:
             ).execute()
         except HttpError as e:
             raise GoogleCalendarError(f"API error fetching week events: {e}") from e
+        except OSError as e:
+            raise GoogleCalendarError(f"Network error fetching week events: {e}") from e
         return [self._parse_event(e) for e in result.get("items", [])]
 
     def search_events(self, query: str, max_results: int = 10) -> list[CalendarEvent]:
@@ -125,6 +129,8 @@ class GoogleCalendarClient:
             ).execute()
         except HttpError as e:
             raise GoogleCalendarError(f"API error searching events: {e}") from e
+        except OSError as e:
+            raise GoogleCalendarError(f"Network error searching events: {e}") from e
         return [self._parse_event(e) for e in result.get("items", [])]
 
     def create_event(
@@ -156,6 +162,8 @@ class GoogleCalendarClient:
             ).execute()
         except HttpError as e:
             raise GoogleCalendarError(f"API error creating event: {e}") from e
+        except OSError as e:
+            raise GoogleCalendarError(f"Network error creating event: {e}") from e
         return self._parse_event(raw)
 
     def update_event(
@@ -174,6 +182,8 @@ class GoogleCalendarClient:
             if e.resp.status == 404:
                 raise GoogleCalendarError(f"Event '{event_id}' not found.") from e
             raise GoogleCalendarError(f"API error fetching event: {e}") from e
+        except OSError as e:
+            raise GoogleCalendarError(f"Network error fetching event: {e}") from e
 
         if summary is not None:
             raw["summary"] = summary
@@ -192,6 +202,8 @@ class GoogleCalendarClient:
             ).execute()
         except HttpError as e:
             raise GoogleCalendarError(f"API error updating event: {e}") from e
+        except OSError as e:
+            raise GoogleCalendarError(f"Network error updating event: {e}") from e
         return self._parse_event(updated)
 
     def delete_event(self, event_id: str) -> None:
@@ -203,3 +215,5 @@ class GoogleCalendarClient:
             if e.resp.status == 404:
                 raise GoogleCalendarError(f"Event '{event_id}' not found.") from e
             raise GoogleCalendarError(f"API error deleting event: {e}") from e
+        except OSError as e:
+            raise GoogleCalendarError(f"Network error deleting event: {e}") from e
