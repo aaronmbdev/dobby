@@ -1,4 +1,5 @@
 from src.tools.body_metrics import get_body_metrics
+from src.tools.can_i_afford import can_i_afford_a_phone, can_i_afford_a_car
 from src.tools.goals import abandon_goal, complete_goal, create_goal, list_goals
 from src.tools.daily_food_log import get_daily_food_log
 from src.tools.finances import (
@@ -48,4 +49,6 @@ TOOLS = [
     create_calendar_event,
     update_calendar_event,
     delete_calendar_event,
+    can_i_afford_a_phone,
+    can_i_afford_a_car,
 ]
