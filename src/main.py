@@ -39,8 +39,9 @@ if (_CLIENT_DIST / "assets").exists():
 
 
 # Catch-all: serve React index.html for any non-API route
+@app.get("/")
 @app.get("/{full_path:path}")
-def serve_spa(full_path: str):
+def serve_spa(full_path: str = ""):
     index = _CLIENT_DIST / "index.html"
     if index.exists():
         return FileResponse(index)
