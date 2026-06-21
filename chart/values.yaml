@@ -1,0 +1,51 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/your-org/dobby
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+# All sensitive values — override these via --set or an external secret manager.
+# Do NOT commit real values here.
+secrets:
+  databaseUrl: ""               # postgresql+psycopg://user:pass@host:5432/db
+  openaiApiKey: ""
+  homeassistantToken: ""
+  resendApiKey: ""
+  resendFromEmail: ""
+  resendToEmail: ""
+
+# Non-sensitive configuration
+config:
+  openaiModel: "gpt-4o"
+  openaiEmbeddingModel: "text-embedding-3-small"
+  homeassistantUrl: "https://homeassistant.example.com"
+  financesUrl: "https://finances.example.com"
+  dietUrl: "https://diet.example.com"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 10
