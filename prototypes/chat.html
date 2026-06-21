@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dobby</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Inter:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #17150F;
+      --surface:     #1E1C14;
+      --bubble-ai:   #25221A;
+      --border:      #35311E;
+      --amber:       #C9A84C;
+      --amber-glow:  rgba(201, 168, 76, 0.12);
+      --amber-dim:   rgba(201, 168, 76, 0.07);
+      --text:        #EDE7D5;
+      --text-muted:  #6E6850;
+      --error:       #B85C3A;
+      --code-bg:     #0F0E0A;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── App shell ── */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 54px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: breathe 3s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.25; }
+    }
+
+    .header-name {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      color: var(--amber);
+      text-transform: uppercase;
+    }
+
+    .thread-area {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+    }
+
+    .thread-label {
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    #thread-display {
+      color: var(--text);
+      cursor: pointer;
+      padding: 2px 6px;
+      border: 1px solid transparent;
+      border-radius: 3px;
+      transition: border-color 0.15s;
+    }
+
+    #thread-display:hover { border-color: var(--border); }
+
+    #thread-input {
+      display: none;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--amber);
+      border-radius: 3px;
+      padding: 2px 8px;
+      outline: none;
+      width: 130px;
+    }
+
+    /* ── Messages ── */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      scroll-behavior: smooth;
+    }
+
+    .messages::-webkit-scrollbar       { width: 4px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* AI message */
+    .msg-ai {
+      display: flex;
+      gap: 13px;
+      align-items: flex-start;
+      max-width: 94%;
+    }
+
+    .avatar {
+      flex-shrink: 0;
+      width: 27px;
+      height: 27px;
+      border-radius: 4px;
+      background: var(--amber-glow);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--amber);
+      margin-top: 2px;
+    }
+
+    .msg-ai-content {
+      background: var(--bubble-ai);
+      border: 1px solid var(--border);
+      border-radius: 2px 8px 8px 8px;
+      padding: 12px 16px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* User message — terminal block style */
+    .msg-user {
+      align-self: flex-end;
+      max-width: 76%;
+    }
+
+    .msg-user-content {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text);
+      background: var(--amber-dim);
+      border: 1px solid rgba(201, 168, 76, 0.18);
+      border-radius: 8px 2px 8px 8px;
+      padding: 10px 14px 10px 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .msg-user-content::before {
+      content: '> ';
+      color: var(--amber);
+      font-weight: 500;
+    }
+
+    /* Thinking dots */
+    .thinking {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      padding: 3px 0;
+    }
+
+    .thinking span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: dot-pulse 1.4s ease-in-out infinite;
+    }
+
+    .thinking span:nth-child(2) { animation-delay: 0.2s; }
+    .thinking span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dot-pulse {
+      0%, 80%, 100% { opacity: 0.15; transform: scale(0.8); }
+      40%            { opacity: 1;    transform: scale(1);   }
+    }
+
+    /* Error notice */
+    .msg-error {
+      align-self: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: var(--error);
+      background: rgba(184, 92, 58, 0.07);
+      border: 1px solid rgba(184, 92, 58, 0.2);
+      border-radius: 4px;
+      padding: 7px 14px;
+    }
+
+    /* ── Markdown inside AI bubble ── */
+    .msg-ai-content p               { margin-bottom: 10px; }
+    .msg-ai-content p:last-child    { margin-bottom: 0; }
+    .msg-ai-content strong          { color: #D4B96A; font-weight: 600; }
+    .msg-ai-content em              { font-style: italic; }
+
+    .msg-ai-content code {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 5px;
+      color: var(--amber);
+    }
+
+    .msg-ai-content pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+
+    .msg-ai-content pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .msg-ai-content ul,
+    .msg-ai-content ol  { margin: 8px 0 8px 18px; }
+    .msg-ai-content li  { margin-bottom: 4px; }
+
+    .msg-ai-content h1,
+    .msg-ai-content h2,
+    .msg-ai-content h3 {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--amber);
+      text-transform: uppercase;
+      font-weight: 500;
+      margin: 14px 0 6px;
+    }
+
+    .msg-ai-content hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 12px 0;
+    }
+
+    /* ── Input area ── */
+    .input-area {
+      flex-shrink: 0;
+      padding: 14px 24px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .input-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px 10px 14px;
+      transition: border-color 0.15s;
+    }
+
+    .input-row:focus-within {
+      border-color: rgba(201, 168, 76, 0.35);
+    }
+
+    .input-prefix {
+      font-family: 'DM Mono', monospace;
+      font-size: 16px;
+      color: var(--amber);
+      line-height: 1.4;
+      padding-bottom: 1px;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    #msg-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      resize: none;
+      min-height: 22px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    #msg-input::placeholder { color: var(--text-muted); }
+
+    .send-btn {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      padding: 2px 0;
+      transition: color 0.15s;
+    }
+
+    .send-btn:hover:not(:disabled) { color: var(--amber); }
+    .send-btn:disabled              { opacity: 0.25; cursor: default; }
+
+    .send-btn svg { width: 16px; height: 16px; }
+
+    .input-hint {
+      margin-top: 7px;
+      text-align: right;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .empty-glyph {
+      font-size: 28px;
+      color: var(--border);
+    }
+
+    .empty-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      .status-dot, .thinking span { animation: none; }
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 600px) {
+      .messages    { padding: 20px 16px; }
+      .input-area  { padding: 12px 16px 18px; }
+      .header      { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <header class="header">
+    <div class="header-left">
+      <div class="status-dot"></div>
+      <span class="header-name">Dobby</span>
+    </div>
+    <div class="thread-area">
+      <span class="thread-label">thread /</span>
+      <span id="thread-display" title="Click to change thread">default</span>
+      <input id="thread-input" type="text" value="default" spellcheck="false" autocomplete="off">
+    </div>
+  </header>
+
+  <div class="messages" id="messages">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-glyph">◈</div>
+      <span class="empty-label">ready</span>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-row">
+      <span class="input-prefix">›</span>
+      <textarea id="msg-input" rows="1" placeholder="say something…" autocomplete="off" spellcheck="false"></textarea>
+      <button class="send-btn" id="send-btn" title="Send (Enter)" aria-label="Send message">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2L8 8M14 2L10 14L8 8L2 6L14 2Z"/>
+        </svg>
+      </button>
+    </div>
+    <p class="input-hint">enter — send &nbsp;·&nbsp; shift+enter — newline</p>
+  </div>
+
+</div>
+<script>
+  const API_BASE = 'http://localhost:8000';
+
+  const messagesEl   = document.getElementById('messages');
+  const inputEl      = document.getElementById('msg-input');
+  const sendBtn      = document.getElementById('send-btn');
+  const threadDisplay = document.getElementById('thread-display');
+  const threadInput  = document.getElementById('thread-input');
+  const emptyState   = document.getElementById('empty-state');
+
+  let isLoading    = false;
+  let thinkingEl   = null;
+  let emptyRemoved = false;
+
+  // ── Thread editing ──────────────────────────────────────────────────────────
+
+  threadDisplay.addEventListener('click', () => {
+    threadDisplay.style.display = 'none';
+    threadInput.style.display = 'inline-block';
+    threadInput.focus();
+    threadInput.select();
+  });
+
+  threadInput.addEventListener('blur', commitThread);
+  threadInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); commitThread(); }
+    if (e.key === 'Escape') { threadInput.value = threadDisplay.textContent; commitThread(); }
+  });
+
+  function commitThread() {
+    const val = threadInput.value.trim() || 'default';
+    threadInput.value          = val;
+    threadDisplay.textContent  = val;
+    threadDisplay.style.display = '';
+    threadInput.style.display  = 'none';
+  }
+
+  // ── Textarea auto-resize ────────────────────────────────────────────────────
+
+  inputEl.addEventListener('input', resizeInput);
+
+  function resizeInput() {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 150) + 'px';
+  }
+
+  // ── Send triggers ───────────────────────────────────────────────────────────
+
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  });
+
+  sendBtn.addEventListener('click', handleSend);
+
+  // ── Markdown renderer ───────────────────────────────────────────────────────
+
+  function renderMarkdown(raw) {
+    // 1. Escape HTML
+    let t = raw
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // 2. Fenced code blocks (must run before inline code)
+    t = t.replace(/```(?:\w+)?\n?([\s\S]*?)```/g, (_, code) =>
+      `<pre><code>${code.trimEnd()}</code></pre>`
+    );
+
+    // 3. Inline code
+    t = t.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+    // 4. Bold / italic
+    t = t.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+    t = t.replace(/\*(.+?)\*/gs,     '<em>$1</em>');
+
+    // 5. Headings
+    t = t.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    t = t.replace(/^## (.+)$/gm,  '<h2>$1</h2>');
+    t = t.replace(/^# (.+)$/gm,   '<h1>$1</h1>');
+
+    // 6. Horizontal rule
+    t = t.replace(/^---$/gm, '<hr>');
+
+    // 7. List items → wrap in <ul>
+    t = t.replace(/^[*-] (.+)$/gm, '<li>$1</li>');
+    t = t.replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
+
+    // 8. Paragraphs: split on blank lines, wrap non-block content
+    const BLOCK = /^<(h[1-6]|ul|ol|pre|hr|li)/;
+    t = t
+      .split(/\n{2,}/)
+      .map(chunk => {
+        chunk = chunk.trim();
+        if (!chunk)          return '';
+        if (BLOCK.test(chunk)) return chunk;
+        return `<p>${chunk.replace(/\n/g, '<br>')}</p>`;
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    return t;
+  }
+
+  // ── DOM helpers ─────────────────────────────────────────────────────────────
+
+  function removeEmpty() {
+    if (!emptyRemoved && emptyState.parentNode) {
+      emptyState.remove();
+      emptyRemoved = true;
+    }
+  }
+
+  function scrollToBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function appendUser(text) {
+    removeEmpty();
+    const row    = document.createElement('div');
+    row.className = 'msg-user';
+    const bubble  = document.createElement('div');
+    bubble.className   = 'msg-user-content';
+    bubble.textContent = text;
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
+    scrollToBottom();
+  }
+
+  function appendThinking() {
+    removeEmpty();
+    const row     = document.createElement('div');
+    row.className = 'msg-ai';
+    row.innerHTML = `
+      <div class="avatar">D</div>
+      <div class="msg-ai-content">
+        <div class="thinking"><span></span><span></span><span></span></div>
+      </div>`;
+    messagesEl.appendChild(row);
+    thinkingEl = row;
+    scrollToBottom();
+  }
+
+  function resolveThinking(html) {
+    if (!thinkingEl) return;
+    thinkingEl.querySelector('.msg-ai-content').innerHTML = html;
+    thinkingEl = null;
+    scrollToBottom();
+  }
+
+  function appendError(msg) {
+    if (thinkingEl) { thinkingEl.remove(); thinkingEl = null; }
+    const div     = document.createElement('div');
+    div.className = 'msg-error';
+    div.textContent = '⚠  ' + msg;
+    messagesEl.appendChild(div);
+    scrollToBottom();
+  }
+
+  // ── Send ────────────────────────────────────────────────────────────────────
+
+  async function handleSend() {
+    const text = inputEl.value.trim();
+    if (!text || isLoading) return;
+
+    const threadId = threadDisplay.textContent.trim() || 'default';
+
+    isLoading          = true;
+    sendBtn.disabled   = true;
+    inputEl.value      = '';
+    inputEl.style.height = 'auto';
+
+    appendUser(text);
+    appendThinking();
+
+    try {
+      const res = await fetch(`${API_BASE}/api/chat`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ message: text, thread_id: threadId }),
+      });
+
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error(`${res.status}${body ? ' — ' + body.slice(0, 160) : ''}`);
+      }
+
+      const data = await res.json();
+      resolveThinking(renderMarkdown(data.response));
+    } catch (err) {
+      appendError(err.message || 'Could not reach the server.');
+    } finally {
+      isLoading        = false;
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+  }
+</script>
+</body>
+</html>
