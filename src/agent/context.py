@@ -4,10 +4,13 @@ from datetime import datetime, UTC
 from langchain_core.messages import SystemMessage
 
 from src.integrations.diet import client as diet_client
-from src.integrations.diet.models import DayLog
+from src.integrations.diet.models import DayLog, Macros
 from src.integrations.finances import client as finances_client
+from src.goals.service import GoalService
 
 logger = structlog.get_logger(__name__)
+
+_goal_service = GoalService()
 
 
 def build_context() -> SystemMessage:
@@ -16,6 +19,7 @@ def build_context() -> SystemMessage:
     _add_financial_context(parts)
     _add_diet_context(parts)
     _add_body_context(parts)
+    _add_goals_context(parts)
 
     return SystemMessage(content="\n".join(parts))
 
@@ -63,11 +67,25 @@ def _add_body_context(parts: list[str]) -> None:
         logger.warning("context: could not load body metrics")
 
 
-def _sum_macros(log: DayLog):
-    calories = sum(meal.total_macros.calories for meal in log.meals)
-    protein = sum(meal.total_macros.protein for meal in log.meals)
-    carbs = sum(meal.total_macros.carbs for meal in log.meals)
-    fat = sum(meal.total_macros.fat for meal in log.meals)
+def _add_goals_context(parts: list[str]) -> None:
+    try:
+        goals = _goal_service.list_active()
+        if goals:
+            lines = []
+            for g in goals:
+                line = f"  - [{g.domain}] {g.title}: {g.target}"
+                if g.deadline:
+                    line += f" (by {g.deadline})"
+                lines.append(line)
+            parts.append("Active goals:\n" + "\n".join(lines))
+    except Exception:
+        logger.warning("context: could not load goals")
 
-    from src.integrations.diet.models import Macros
-    return Macros(calories=calories, protein=protein, carbs=carbs, fat=fat)
+
+def _sum_macros(log: DayLog) -> Macros:
+    return Macros(
+        calories=sum(meal.total_macros.calories for meal in log.meals),
+        protein=sum(meal.total_macros.protein for meal in log.meals),
+        carbs=sum(meal.total_macros.carbs for meal in log.meals),
+        fat=sum(meal.total_macros.fat for meal in log.meals),
+    )

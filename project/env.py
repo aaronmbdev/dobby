@@ -5,7 +5,9 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from src.memory.models import Base
+from src.database.base import Base
+from src.goals.models import Goal  # noqa: F401 — registers table with Base.metadata
+from src.memory.models import Memory  # noqa: F401 — registers table with Base.metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

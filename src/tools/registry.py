@@ -1,4 +1,5 @@
 from src.tools.body_metrics import get_body_metrics
+from src.tools.goals import abandon_goal, complete_goal, create_goal, list_goals
 from src.tools.daily_food_log import get_daily_food_log
 from src.tools.finances import (
     get_accounts,
@@ -27,4 +28,9 @@ TOOLS = [
     get_net_worth_history,
     get_financial_health,
     get_monthly_report,
+    # goals
+    create_goal,
+    list_goals,
+    complete_goal,
+    abandon_goal,
 ]

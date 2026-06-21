@@ -2,17 +2,11 @@ from datetime import datetime, UTC
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import Text, DateTime
-from sqlalchemy.orm import (
-    DeclarativeBase,
-    Mapped,
-    mapped_column,
-)
+from sqlalchemy.orm import Mapped, mapped_column
+
+from src.database.base import Base
 
 EMBEDDING_DIM = 1536
-
-
-class Base(DeclarativeBase):
-    pass
 
 
 class Memory(Base):
