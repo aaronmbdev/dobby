@@ -11,6 +11,13 @@ from src.tools.finances import (
 )
 from src.tools.homeassistant import is_fridge_open
 from src.tools.memory import remember, recall
+from src.tools.calendar import (
+    get_daily_agenda,
+    get_weekly_agenda,
+    search_calendar_events,
+    create_calendar_event,
+    delete_calendar_event,
+)
 
 TOOLS = [
     # home
@@ -33,4 +40,10 @@ TOOLS = [
     list_goals,
     complete_goal,
     abandon_goal,
+    # calendar
+    get_daily_agenda,
+    get_weekly_agenda,
+    search_calendar_events,
+    create_calendar_event,
+    delete_calendar_event,
 ]
