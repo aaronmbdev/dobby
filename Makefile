@@ -2,4 +2,5 @@ database:
 	docker-compose up -d
 
 dev:
-	uv run uvicorn src.main:app --reload
+	uv run uvicorn src.main:app --reload &
+	cd client && npm run dev
