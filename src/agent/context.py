@@ -3,19 +3,22 @@ from datetime import datetime, UTC
 
 from langchain_core.messages import SystemMessage
 
+from src.goals.service import GoalService
 from src.integrations.diet import client as diet_client
 from src.integrations.diet.models import DayLog, Macros
 from src.integrations.finances import client as finances_client
-from src.goals.service import GoalService
+from src.summaries.repository import SummaryRepository
 
 logger = structlog.get_logger(__name__)
 
 _goal_service = GoalService()
+_summary_repo = SummaryRepository()
 
 
 def build_context() -> SystemMessage:
     parts = [f"Today is {datetime.now(UTC).strftime('%A, %d %B %Y')}."]
 
+    _add_pending_summary(parts)
     _add_financial_context(parts)
     _add_diet_context(parts)
     _add_body_context(parts)
@@ -65,6 +68,19 @@ def _add_body_context(parts: list[str]) -> None:
             )
     except Exception:
         logger.warning("context: could not load body metrics")
+
+
+def _add_pending_summary(parts: list[str]) -> None:
+    try:
+        summary = _summary_repo.get_latest_unread()
+        if summary:
+            parts.append(
+                f"[New {summary.type} summary — proactively share this with the user]\n"
+                f"{summary.content}"
+            )
+            _summary_repo.mark_read(summary.id)
+    except Exception:
+        logger.warning("context: could not load pending summary")
 
 
 def _add_goals_context(parts: list[str]) -> None:
