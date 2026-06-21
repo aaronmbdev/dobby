@@ -153,6 +153,42 @@ class GoogleCalendarClient:
             raise GoogleCalendarError(f"API error creating event: {e}") from e
         return self._parse_event(raw)
 
+    def update_event(
+        self,
+        event_id: str,
+        summary: str | None = None,
+        start_datetime: str | None = None,
+        end_datetime: str | None = None,
+        description: str | None = None,
+        location: str | None = None,
+    ) -> CalendarEvent:
+        service = self._get_service()
+        try:
+            raw = service.events().get(calendarId="primary", eventId=event_id).execute()
+        except HttpError as e:
+            if e.resp.status == 404:
+                raise GoogleCalendarError(f"Event '{event_id}' not found.") from e
+            raise GoogleCalendarError(f"API error fetching event: {e}") from e
+
+        if summary is not None:
+            raw["summary"] = summary
+        if description is not None:
+            raw["description"] = description
+        if location is not None:
+            raw["location"] = location
+        if start_datetime is not None:
+            raw["start"] = {"dateTime": start_datetime, "timeZone": settings.google_calendar_timezone}
+        if end_datetime is not None:
+            raw["end"] = {"dateTime": end_datetime, "timeZone": settings.google_calendar_timezone}
+
+        try:
+            updated = service.events().update(
+                calendarId="primary", eventId=event_id, body=raw
+            ).execute()
+        except HttpError as e:
+            raise GoogleCalendarError(f"API error updating event: {e}") from e
+        return self._parse_event(updated)
+
     def delete_event(self, event_id: str) -> None:
         try:
             self._get_service().events().delete(

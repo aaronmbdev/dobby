@@ -105,6 +105,31 @@ def create_calendar_event(
 
 
 @tool(description=(
+    "Update an existing Google Calendar event. "
+    "Use when the user wants to reschedule, rename, or edit details of an event. "
+    "Always call search_calendar_events or get_daily_agenda first to get the event ID. "
+    "Only pass the fields that need to change — omit fields that should stay the same. "
+    "start_datetime and end_datetime must be in ISO-8601 format: YYYY-MM-DDTHH:MM:SS if provided."
+))
+def update_calendar_event(
+    event_id: str,
+    summary: str | None = None,
+    start_datetime: str | None = None,
+    end_datetime: str | None = None,
+    description: str | None = None,
+    location: str | None = None,
+) -> str:
+    logger.info("Invoking update_calendar_event tool", event_id=event_id)
+    try:
+        event = client.update_event(event_id, summary, start_datetime, end_datetime, description, location)
+        return f"Event updated: [{event.event_id}] {event.summary} | {event.start} – {event.end}"
+    except GoogleCalendarNotConfiguredError as e:
+        return f"Google Calendar is not configured: {e.message}"
+    except GoogleCalendarError as e:
+        return f"Could not update event: {e.message}"
+
+
+@tool(description=(
     "Delete a Google Calendar event by its event ID. "
     "Always call search_calendar_events or get_daily_agenda first to get the event ID. "
     "Always confirm with the user before deleting."

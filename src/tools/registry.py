@@ -16,6 +16,7 @@ from src.tools.calendar import (
     get_weekly_agenda,
     search_calendar_events,
     create_calendar_event,
+    update_calendar_event,
     delete_calendar_event,
 )
 
@@ -45,5 +46,6 @@ TOOLS = [
     get_weekly_agenda,
     search_calendar_events,
     create_calendar_event,
+    update_calendar_event,
     delete_calendar_event,
 ]
