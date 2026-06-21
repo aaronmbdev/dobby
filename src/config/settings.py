@@ -18,5 +18,9 @@ class Settings(BaseSettings):
         "postgresql+psycopg://jarvis:jarvis@localhost:5432/jarvis"
     )
 
+    @property
+    def psycopg_url(self) -> str:
+        return self.database_url.replace("postgresql+psycopg://", "postgresql://")
+
 
 settings = Settings()

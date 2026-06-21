@@ -1,10 +1,9 @@
 from pydantic import BaseModel
 
-from src.common.models import Message
-
 
 class ChatRequest(BaseModel):
-    messages: list[Message]
+    message: str
+    thread_id: str = "default"
 
 
 class ChatResponse(BaseModel):

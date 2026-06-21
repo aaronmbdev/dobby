@@ -1,24 +1,13 @@
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.messages import HumanMessage
 
 from src.agent.graph import jarvis_graph
-from src.agent.prompts import DOBBY_SYSTEM
-from src.common.models import Message
-
-
-def _to_langchain_message(message: Message) -> BaseMessage:
-    if message.role == "assistant":
-        return AIMessage(content=message.content)
-    return HumanMessage(content=message.content)
 
 
 class ChatService:
-    def chat(self, messages: list[Message]) -> str:
+    def chat(self, message: str, thread_id: str) -> str:
+        config = {"configurable": {"thread_id": thread_id}}
         result = jarvis_graph.invoke(
-            {
-                "messages": [
-                    DOBBY_SYSTEM,
-                    *[_to_langchain_message(m) for m in messages],
-                ]
-            }
+            {"messages": [HumanMessage(content=message)]},
+            config=config,
         )
         return result["messages"][-1].content

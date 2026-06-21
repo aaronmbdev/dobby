@@ -1,8 +1,9 @@
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 
-from src.agent.state import AgentState
+from src.agent.checkpointer import checkpointer
 from src.agent.nodes import agent_node
+from src.agent.state import AgentState
 from src.tools.registry import TOOLS
 
 
@@ -29,4 +30,4 @@ graph.add_conditional_edges(
 
 graph.add_edge("tools", "agent")
 
-jarvis_graph = graph.compile()
+jarvis_graph = graph.compile(checkpointer=checkpointer)
