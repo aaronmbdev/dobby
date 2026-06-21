@@ -20,6 +20,9 @@ class GoalService:
     def list_active(self) -> list[Goal]:
         return self.repository.list_active()
 
+    def list_active_by_domain(self, domain: str) -> list[Goal]:
+        return self.repository.list_active_by_domain(domain)
+
     def complete(self, goal_id: int) -> bool:
         return self.repository.update_status(goal_id, "completed")
 

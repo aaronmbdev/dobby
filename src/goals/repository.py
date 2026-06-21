@@ -26,6 +26,13 @@ class GoalRepository:
             result = session.execute(select(Goal).where(Goal.status == "active"))
             return list(result.scalars().all())
 
+    def list_active_by_domain(self, domain: str) -> list[Goal]:
+        with SessionLocal() as session:
+            result = session.execute(
+                select(Goal).where(Goal.status == "active", Goal.domain == domain)
+            )
+            return list(result.scalars().all())
+
     def update_status(self, goal_id: int, status: str) -> bool:
         with SessionLocal() as session:
             goal = session.get(Goal, goal_id)
