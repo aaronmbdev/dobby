@@ -8,3 +8,13 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     response: str
+
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class HistoryResponse(BaseModel):
+    thread_id: str
+    messages: list[ChatMessage]
