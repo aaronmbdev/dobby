@@ -1,7 +1,9 @@
+import httplib2
 import structlog
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+import google_auth_httplib2
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -44,7 +46,10 @@ class GoogleCalendarClient:
             client_secret=settings.google_client_secret,
         )
         creds.refresh(Request())
-        self._service = build("calendar", "v3", credentials=creds, cache_discovery=False)
+        authed_http = google_auth_httplib2.AuthorizedHttp(
+            creds, http=httplib2.Http(timeout=30)
+        )
+        self._service = build("calendar", "v3", http=authed_http, cache_discovery=False)
         return self._service
 
     def _tz(self) -> ZoneInfo:
