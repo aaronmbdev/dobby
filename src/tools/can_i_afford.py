@@ -22,7 +22,7 @@ def can_i_afford_a_car(car_price: float, interest_rate: int = 5):
 
     # Rule 2: EMI ≤ 10% of monthly income, 4-year loan
     loan_amount = car_price - down_payment_needed
-    monthly_rate = (100*interest_rate) / 12
+    monthly_rate = interest_rate / 100 / 12
     n = 48
     emi = loan_amount * (monthly_rate * (1 + monthly_rate)**n) / ((1 + monthly_rate)**n - 1)
     max_emi = monthly_income * 0.10
@@ -65,8 +65,8 @@ def can_i_afford_a_phone(price: float, interest_rate: int = 5):
     can_afford_total = price <= (2 * monthly_income)
 
     loan_amount = price
-    monthly_rate = (100 * interest_rate) / 12
-    n = 0.5
+    monthly_rate = interest_rate / 100 / 12
+    n = 6
     emi = loan_amount * (monthly_rate * (1 + monthly_rate) ** n) / ((1 + monthly_rate) ** n - 1)
     max_emi = monthly_income * 0.10
     can_afford_emi = emi <= max_emi
@@ -77,7 +77,7 @@ def can_i_afford_a_phone(price: float, interest_rate: int = 5):
 
     return (
         f"Phone price: €{price:,.2f}\n"
-        f"{'OK' if can_afford_total else 'FAIL'} - Price exceeds twice the monthly income\n"
+        f"Price vs 2x income: €{price:,.2f} vs €{2 * monthly_income:,.2f} — {'OK' if can_afford_total else 'FAIL'}\n"
         f"Monthly EMI (6m loan): €{emi:,.2f} — "
         f"{'OK' if can_afford_emi else 'FAIL'} (max €{max_emi:,.2f} = 10% of income)\n"
         f"\n{veredict}"
