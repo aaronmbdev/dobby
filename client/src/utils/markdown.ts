@@ -1,13 +1,13 @@
 import DOMPurify from 'dompurify'
 
 // Tags and attributes produced by our own renderer — nothing more is allowed.
-const PURIFY_CONFIG: DOMPurify.Config = {
+const PURIFY_CONFIG = {
   ALLOWED_TAGS: [
     'p', 'br', 'strong', 'em', 'code', 'pre',
     'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'hr',
   ],
   ALLOWED_ATTR: [],
-}
+} satisfies DOMPurify.Config
 
 export function renderMarkdown(raw: string): string {
   let t = raw
