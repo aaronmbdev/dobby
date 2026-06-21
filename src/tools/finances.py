@@ -1,15 +1,18 @@
+import structlog
 from langchain_core.tools import tool
 
 from src.integrations.finances import client
 from src.integrations.finances.exceptions import FinanceIntegrationError
 from src.integrations.finances.models import MonthlyReport
 
+logger = structlog.get_logger(__name__)
 
 @tool(description=(
     "Get all bank and cash accounts with their current balance and last update date. "
     "Use when the user asks about their bank accounts, savings, cash position, or total liquid assets."
 ))
 def get_accounts() -> str:
+    logger.info("Invoking get_accounts tool")
     try:
         accounts = client.get_accounts()
         if not accounts:
@@ -31,6 +34,7 @@ def get_accounts() -> str:
     "Use when the user asks about their stocks, equity holdings, or individual stock positions."
 ))
 def get_stocks() -> str:
+    logger.info("Invoking get_stocks tool")
     try:
         stocks = client.get_stocks()
         if not stocks:
@@ -56,6 +60,7 @@ def get_stocks() -> str:
     "Use when the user asks about their funds, index funds, ETFs, or fund portfolio."
 ))
 def get_investment_funds() -> str:
+    logger.info("Invoking get_investment_funds tool")
     try:
         funds = client.get_investment_funds()
         if not funds:
@@ -81,6 +86,7 @@ def get_investment_funds() -> str:
     "Returns all recorded monthly snapshots."
 ))
 def get_net_worth_history() -> str:
+    logger.info("Invoking get_net_worth_history tool")
     try:
         snapshots = client.get_net_worth_history()
         if not snapshots:
@@ -104,6 +110,7 @@ def get_net_worth_history() -> str:
     "or wants a general overview of their financial situation."
 ))
 def get_financial_health() -> str:
+    logger.info("Invoking get_financial_health tool")
     try:
         m = client.get_health_metrics()
         return (
@@ -126,9 +133,10 @@ def get_financial_health() -> str:
     "Get a detailed monthly financial report: all expenses listed by category, income, "
     "and an overview with total income, total expenses, and net balance. "
     "Use when the user asks about spending in a specific month, their expense breakdown, "
-    "or how much they earned and spent. Date must be YYYY-MM-DD (any day within the target month)."
+    "or how much they earned and spent. Date must be YYYY-MM."
 ))
 def get_monthly_report(date: str) -> str:
+    logger.info("Invoking get_monthly_report tool for date: %s", date)
     try:
         report = client.get_report_by_month(date)
         return _format_monthly_report(report)

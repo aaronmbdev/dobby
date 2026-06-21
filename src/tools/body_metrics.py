@@ -1,9 +1,11 @@
+import structlog
 from langchain_core.tools import tool
 
 from src.integrations.diet import client
 from src.integrations.diet.exceptions import DietIntegrationError
 from src.integrations.diet.models import BodyMetric
 
+logger = structlog.get_logger(__name__)
 
 @tool(description=(
     "Retrieve all historical body composition measurements: weight, body fat (kg), "
@@ -12,6 +14,7 @@ from src.integrations.diet.models import BodyMetric
     "or trends over time. Returns all recorded entries sorted by date."
 ))
 def get_body_metrics() -> str:
+    logger.info("Invoking get_body_metrics tool")
     try:
         metrics = client.get_body_metrics()
         return _parse_body_metrics(metrics)

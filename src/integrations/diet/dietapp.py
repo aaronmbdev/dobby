@@ -1,6 +1,8 @@
 import httpx
 from datetime import datetime
 
+import structlog
+
 from src.config.settings import settings
 from src.integrations.diet.exceptions import DietIntegrationError
 from src.integrations.diet.models import DayLog, Macros, Meal, Food, BodyMetric
@@ -8,6 +10,7 @@ from src.integrations.diet.models import DayLog, Macros, Meal, Food, BodyMetric
 
 class DietAppClient:
     def __init__(self):
+        self.logger = structlog.get_logger()
         self.profile_id = "a7c7c256-fb0c-4b5e-96bc-1f3b2d82fcd1"
         self.client = httpx.Client(
             base_url=settings.diet_url,
@@ -18,6 +21,7 @@ class DietAppClient:
         )
 
     def get_daily_log(self, date: str = None) -> DayLog:
+        self.logger.info("Fetching daily food log for %s", date)
         if date is None:
             date = datetime.today().strftime('%Y-%m-%d')
         endpoint = f"/api/daily-logs"
@@ -44,16 +48,19 @@ class DietAppClient:
                 meals=meals
             )
         except httpx.HTTPError as e:
+            self.logger.error("Error fetching daily log: %s", e)
             raise DietIntegrationError(f"Error fetching daily log: {e}") from e
 
 
     def get_body_metrics(self) -> list[BodyMetric]:
         endpoint = f"/api/body-metrics"
+        self.logger.info("Fetching body metrics for %s", endpoint)
         try:
             data = self._make_get_request(endpoint, {"profileId": self.profile_id})
             metrics = data.get("metrics")
             return [BodyMetric(**metric) for metric in metrics] if metrics else []
         except httpx.HTTPError as e:
+            self.logger.error("Error fetching body metrics: %s", e)
             raise DietIntegrationError(f"Error fetching body metrics: {e}") from e
 
 
