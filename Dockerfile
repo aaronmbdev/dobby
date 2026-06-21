@@ -1,4 +1,15 @@
-# ── Builder ───────────────────────────────────────────────────────────────────
+# ── Client builder ────────────────────────────────────────────────────────────
+FROM node:22-slim AS client-builder
+
+WORKDIR /client
+
+COPY client/package.json client/package-lock.json* ./
+RUN npm ci
+
+COPY client ./
+RUN npm run build
+
+# ── Python builder ─────────────────────────────────────────────────────────────
 FROM python:3.14-slim AS builder
 
 WORKDIR /app
@@ -22,6 +33,9 @@ COPY --from=builder /app/.venv /app/.venv
 COPY src ./src
 COPY project ./project
 COPY alembic.ini ./alembic.ini
+
+# Copy compiled React app from client builder
+COPY --from=client-builder /client/dist ./client/dist
 
 # Make the venv's binaries available on PATH
 ENV PATH="/app/.venv/bin:$PATH" \

@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     resend_from_email: str
     resend_to_email: str
 
+    google_client_id: str | None = None
+    google_client_secret: str | None = None
+    google_refresh_token: str | None = None
+    google_calendar_timezone: str = "UTC"
+
     database_url: str = (
         "postgresql+psycopg://jarvis:jarvis@localhost:5432/jarvis"
     )

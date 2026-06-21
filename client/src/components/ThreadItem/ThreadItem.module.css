@@ -1,0 +1,70 @@
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  gap: 6px;
+  transition: background 0.1s;
+  outline: none;
+}
+
+.item:hover {
+  background: var(--surface);
+}
+
+.item.active {
+  background: var(--amber-glow);
+  border-color: rgba(201, 168, 76, 0.2);
+}
+
+.item:focus-visible {
+  outline: 1px solid var(--amber);
+  outline-offset: -1px;
+}
+
+.name {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.active .name {
+  color: var(--amber);
+}
+
+.deleteBtn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.1s, color 0.1s;
+  padding: 0;
+}
+
+.item:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  color: var(--delete);
+}
+
+.deleteBtn svg {
+  width: 12px;
+  height: 12px;
+}
