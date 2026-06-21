@@ -1,0 +1,42 @@
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebarWrapper {
+  flex-shrink: 0;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .sidebarWrapper {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+  }
+
+  /* Show sidebar full-screen when active */
+  .sidebarWrapper.sidebarVisible {
+    display: flex;
+  }
+
+  /* Sidebar fills full screen on mobile */
+  .sidebarWrapper > * {
+    width: 100%;
+    border-right: none;
+  }
+
+  /* Hide main when thread list is showing on mobile */
+  .mainHidden {
+    display: none;
+  }
+}

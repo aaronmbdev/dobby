@@ -1,0 +1,23 @@
+.wrapper {
+  align-self: flex-end;
+  max-width: 76%;
+}
+
+.bubble {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--amber-dim);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  border-radius: 8px 2px 8px 8px;
+  padding: 10px 14px 10px 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bubble::before {
+  content: '> ';
+  color: var(--amber);
+  font-weight: 500;
+}
