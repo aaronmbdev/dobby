@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      VERSION: "1.0.${{ github.run_id }}"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/aaronmbdev/dobby:${{ env.VERSION }}
+            ghcr.io/aaronmbdev/dobby:latest
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Package and push Helm chart
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          sed -i "s/^version:.*/version: ${VERSION}/" chart/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"${VERSION}\"/" chart/Chart.yaml
+          sed -i "s/^  tag:.*/  tag: ${VERSION}/" chart/values.yaml
+          helm package chart
+          helm push "dobby-${VERSION}.tgz" oci://ghcr.io/aaronmbdev/charts
