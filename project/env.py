@@ -15,7 +15,7 @@ from src.memory.models import Memory  # noqa: F401 — registers table with Base
 config = context.config
 
 # Allow DATABASE_URL env var to override the URL in alembic.ini.
-if db_url := os.getenv("DATABASE_URL"):
+if db_url := os.getenv("DATABASE_URL_ALEMBIC"):
     config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.
