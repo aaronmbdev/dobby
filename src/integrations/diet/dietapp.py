@@ -52,9 +52,7 @@ class DietAppClient:
         try:
             data = self._make_get_request(endpoint, {"profileId": self.profile_id})
             metrics = data.get("metrics")
-            if not metrics:
-                raise DietIntegrationError("No body metrics found for the given profile.")
-            return [BodyMetric(**metric) for metric in metrics]
+            return [BodyMetric(**metric) for metric in metrics] if metrics else []
         except httpx.HTTPError as e:
             raise DietIntegrationError(f"Error fetching body metrics: {e}") from e
 

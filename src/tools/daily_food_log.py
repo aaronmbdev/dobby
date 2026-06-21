@@ -1,22 +1,24 @@
 from langchain_core.tools import tool
 
-from src.integrations.diet.dietapp import DietAppClient
+from src.integrations.diet import client
+from src.integrations.diet.exceptions import DietIntegrationError
 from src.integrations.diet.models import Macros
 
-_client = DietAppClient()
 
-@tool(
-    description="Get the daily meal log for a specific date. If no date is provided, it will return today's log. Date must be in the format YYYY-MM-DD.")
+@tool(description=(
+    "Get the meal-by-meal food log for a specific date, including each food item, "
+    "its weight in grams, macros (calories, protein, carbs, fat), and the daily targets. "
+    "Use when the user asks what they ate, their macro intake, or whether they hit their goals. "
+    "Defaults to today if no date is provided. Date must be YYYY-MM-DD."
+))
 def get_daily_food_log(date: str = None) -> str:
-    data = _client.get_daily_log(date)
-    target_macros = _parse_macros(data.target)
-    meals = _parse_meals(data.meals)
-    return f"""
-    Daily Log for {date}:
-    Target Macros: {target_macros}
-    Meals:
-    {meals}
-    """
+    try:
+        data = client.get_daily_log(date)
+        target_macros = _parse_macros(data.target)
+        meals = _parse_meals(data.meals)
+        return f"Daily Log for {data.date}:\nTarget Macros: {target_macros}\nMeals:\n{meals}"
+    except DietIntegrationError as e:
+        return f"Could not fetch daily food log: {e.message}"
 
 
 def _parse_macros(macros: Macros) -> str:
