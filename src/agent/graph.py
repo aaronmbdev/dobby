@@ -10,7 +10,7 @@ from src.tools.registry import TOOLS
 graph = StateGraph(AgentState)
 
 graph.add_node("agent", agent_node)
-graph.add_node("tools", ToolNode(TOOLS))
+graph.add_node("tools", ToolNode(TOOLS, handle_tool_errors=True))
 
 graph.set_entry_point("agent")
 
