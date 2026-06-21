@@ -10,6 +10,15 @@ service:
   port: 80
   targetPort: 8000
 
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: "dobby.example.com"
+  tls:
+    enabled: false
+    secretName: "dobby-tls"
+
 # Name of a pre-existing Kubernetes Secret in the same namespace.
 # The chart does NOT create this secret — it must already exist in the cluster.
 # Expected keys: DATABASE_URL, OPENAI_API_KEY, HOMEASSISTANT_TOKEN,
