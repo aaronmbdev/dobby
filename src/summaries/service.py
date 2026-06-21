@@ -6,7 +6,7 @@ from src.config.settings import settings
 from src.goals.service import GoalService
 from src.integrations.diet import client as diet_client
 from src.integrations.finances import client as finances_client
-from src.summaries.repository import SummaryRepository
+from src.summaries.email import send_summary
 
 logger = structlog.get_logger(__name__)
 
@@ -26,14 +26,13 @@ unexpected, or actionable. Use plain language. No headers. No markdown formattin
 class SummaryService:
 
     def __init__(self) -> None:
-        self.repository = SummaryRepository()
         self._goal_service = GoalService()
 
-    def generate_and_save(self, summary_type: str) -> None:
+    def generate_and_send(self, summary_type: str) -> None:
         data = self._gather_data(summary_type)
         content = self._generate(summary_type, data)
-        self.repository.save(summary_type, content)
-        logger.info("summary saved", type=summary_type)
+        send_summary(summary_type, content)
+        logger.info("summary sent", type=summary_type)
 
     def _generate(self, summary_type: str, data: str) -> str:
         period = "weekly" if summary_type == "weekly" else "monthly"

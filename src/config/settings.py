@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     finances_url: str = "https://finances.aaronbotton.dev"
     diet_url: str = "https://diet.aaronbotton.dev"
 
+    resend_api_key: str
+    resend_from_email: str
+    resend_to_email: str
+
     database_url: str = (
         "postgresql+psycopg://jarvis:jarvis@localhost:5432/jarvis"
     )
