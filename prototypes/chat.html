@@ -9,17 +9,19 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Inter:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:          #17150F;
-      --surface:     #1E1C14;
-      --bubble-ai:   #25221A;
-      --border:      #35311E;
-      --amber:       #C9A84C;
-      --amber-glow:  rgba(201, 168, 76, 0.12);
-      --amber-dim:   rgba(201, 168, 76, 0.07);
-      --text:        #EDE7D5;
-      --text-muted:  #6E6850;
-      --error:       #B85C3A;
-      --code-bg:     #0F0E0A;
+      --bg:         #17150F;
+      --sidebar:    #111009;
+      --surface:    #1E1C14;
+      --bubble-ai:  #25221A;
+      --border:     #35311E;
+      --amber:      #C9A84C;
+      --amber-glow: rgba(201, 168, 76, 0.12);
+      --amber-dim:  rgba(201, 168, 76, 0.07);
+      --text:       #EDE7D5;
+      --text-muted: #6E6850;
+      --error:      #B85C3A;
+      --delete:     #8A3A2A;
+      --code-bg:    #0F0E0A;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,31 +36,30 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── App shell ── */
+    /* ── Shell ── */
     .app {
       display: flex;
-      flex-direction: column;
       height: 100vh;
-      max-width: 780px;
-      margin: 0 auto;
     }
 
-    /* ── Header ── */
-    .header {
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
       flex-shrink: 0;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      height: 54px;
-      border-bottom: 1px solid var(--border);
-      font-family: 'DM Mono', monospace;
+      flex-direction: column;
+      overflow: hidden;
     }
 
-    .header-left {
+    .sidebar-header {
+      padding: 16px 16px 14px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 9px;
+      font-family: 'DM Mono', monospace;
     }
 
     .status-dot {
@@ -66,6 +67,7 @@
       height: 7px;
       border-radius: 50%;
       background: var(--amber);
+      flex-shrink: 0;
       animation: breathe 3s ease-in-out infinite;
     }
 
@@ -74,49 +76,184 @@
       50%       { opacity: 0.25; }
     }
 
-    .header-name {
-      font-size: 13px;
+    .app-name {
+      font-size: 12px;
       font-weight: 500;
       letter-spacing: 0.14em;
       color: var(--amber);
       text-transform: uppercase;
     }
 
-    .thread-area {
+    .sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .sidebar-body::-webkit-scrollbar       { width: 3px; }
+    .sidebar-body::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .sidebar-section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 8px 4px;
+    }
+
+    /* Thread item */
+    .thread-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      gap: 6px;
+      transition: background 0.1s;
+    }
+
+    .thread-item:hover {
+      background: var(--surface);
+    }
+
+    .thread-item.active {
+      background: var(--amber-glow);
+      border-color: rgba(201, 168, 76, 0.2);
+    }
+
+    .thread-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .thread-item.active .thread-name {
+      color: var(--amber);
+    }
+
+    .thread-delete {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+      opacity: 0;
+      transition: opacity 0.1s, color 0.1s;
+      padding: 0;
+    }
+
+    .thread-item:hover .thread-delete    { opacity: 1; }
+    .thread-delete:hover                 { color: var(--delete); }
+
+    .thread-delete svg { width: 12px; height: 12px; }
+
+    /* New thread input row */
+    .new-thread-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 8px;
+      border-radius: 4px;
+      border: 1px dashed var(--border);
+      margin-top: 2px;
+    }
+
+    .new-thread-prefix {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--amber);
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    #new-thread-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      min-width: 0;
+    }
+
+    #new-thread-input::placeholder { color: var(--text-muted); }
+
+    /* New thread button */
+    .new-thread-btn {
+      margin: 6px 8px 4px;
       display: flex;
       align-items: center;
       gap: 7px;
-      font-size: 12px;
-    }
-
-    .thread-label {
-      color: var(--text-muted);
-      letter-spacing: 0.05em;
-    }
-
-    #thread-display {
-      color: var(--text);
+      padding: 7px 8px;
+      border-radius: 4px;
+      border: 1px dashed var(--border);
+      background: none;
       cursor: pointer;
-      padding: 2px 6px;
-      border: 1px solid transparent;
-      border-radius: 3px;
-      transition: border-color 0.15s;
-    }
-
-    #thread-display:hover { border-color: var(--border); }
-
-    #thread-input {
-      display: none;
       font-family: 'DM Mono', monospace;
-      font-size: 12px;
-      background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--amber);
-      border-radius: 3px;
-      padding: 2px 8px;
-      outline: none;
-      width: 130px;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      transition: color 0.15s, border-color 0.15s;
+      width: calc(100% - 16px);
+      text-align: left;
     }
+
+    .new-thread-btn:hover {
+      color: var(--amber);
+      border-color: rgba(201, 168, 76, 0.3);
+    }
+
+    .new-thread-btn svg { width: 12px; height: 12px; }
+
+    /* Empty threads state */
+    .threads-empty {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 20px 8px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Main area ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .main-header {
+      flex-shrink: 0;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      gap: 8px;
+    }
+
+    .main-header-slash  { color: var(--text-muted); font-size: 13px; }
+    .main-header-thread { font-size: 13px; color: var(--text); }
 
     /* ── Messages ── */
     .messages {
@@ -170,7 +307,7 @@
       min-width: 0;
     }
 
-    /* User message — terminal block style */
+    /* User message */
     .msg-user {
       align-self: flex-end;
       max-width: 76%;
@@ -216,10 +353,10 @@
 
     @keyframes dot-pulse {
       0%, 80%, 100% { opacity: 0.15; transform: scale(0.8); }
-      40%            { opacity: 1;    transform: scale(1);   }
+      40%            { opacity: 1;    transform: scale(1); }
     }
 
-    /* Error notice */
+    /* Error */
     .msg-error {
       align-self: center;
       font-family: 'DM Mono', monospace;
@@ -232,7 +369,7 @@
       padding: 7px 14px;
     }
 
-    /* ── Markdown inside AI bubble ── */
+    /* ── Markdown ── */
     .msg-ai-content p               { margin-bottom: 10px; }
     .msg-ai-content p:last-child    { margin-bottom: 0; }
     .msg-ai-content strong          { color: #D4B96A; font-weight: 600; }
@@ -287,7 +424,7 @@
       margin: 12px 0;
     }
 
-    /* ── Input area ── */
+    /* ── Input ── */
     .input-area {
       flex-shrink: 0;
       padding: 14px 24px 20px;
@@ -305,9 +442,7 @@
       transition: border-color 0.15s;
     }
 
-    .input-row:focus-within {
-      border-color: rgba(201, 168, 76, 0.35);
-    }
+    .input-row:focus-within { border-color: rgba(201, 168, 76, 0.35); }
 
     .input-prefix {
       font-family: 'DM Mono', monospace;
@@ -350,8 +485,7 @@
 
     .send-btn:hover:not(:disabled) { color: var(--amber); }
     .send-btn:disabled              { opacity: 0.25; cursor: default; }
-
-    .send-btn svg { width: 16px; height: 16px; }
+    .send-btn svg                   { width: 16px; height: 16px; }
 
     .input-hint {
       margin-top: 7px;
@@ -362,7 +496,7 @@
       letter-spacing: 0.04em;
     }
 
-    /* ── Empty state ── */
+    /* ── Empty chat state ── */
     .empty-state {
       flex: 1;
       display: flex;
@@ -374,18 +508,79 @@
       user-select: none;
     }
 
-    .empty-glyph {
-      font-size: 28px;
-      color: var(--border);
-    }
-
-    .empty-label {
+    .empty-glyph  { font-size: 28px; color: var(--border); }
+    .empty-label  {
       font-family: 'DM Mono', monospace;
       font-size: 11px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--text-muted);
     }
+
+    /* ── Confirm overlay ── */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .confirm-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 24px;
+      width: 300px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .confirm-title {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 10px;
+    }
+
+    .confirm-body {
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .confirm-body strong { color: var(--amber); }
+
+    .confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      padding: 6px 14px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      background: none;
+      color: var(--text-muted);
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .btn:hover { color: var(--text); border-color: var(--text-muted); }
+
+    .btn-danger {
+      border-color: rgba(184, 92, 58, 0.4);
+      color: var(--error);
+    }
+
+    .btn-danger:hover { background: rgba(184, 92, 58, 0.1); border-color: var(--error); color: var(--error); }
 
     /* ── Reduced motion ── */
     @media (prefers-reduced-motion: reduce) {
@@ -394,144 +589,295 @@
 
     /* ── Mobile ── */
     @media (max-width: 600px) {
-      .messages    { padding: 20px 16px; }
-      .input-area  { padding: 12px 16px 18px; }
-      .header      { padding: 0 16px; }
+      .sidebar      { display: none; }
+      .messages     { padding: 20px 16px; }
+      .input-area   { padding: 12px 16px 18px; }
+      .main-header  { padding: 0 16px; }
     }
   </style>
 </head>
 <body>
 <div class="app">
 
-  <header class="header">
-    <div class="header-left">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
       <div class="status-dot"></div>
-      <span class="header-name">Dobby</span>
+      <span class="app-name">Dobby</span>
     </div>
-    <div class="thread-area">
-      <span class="thread-label">thread /</span>
-      <span id="thread-display" title="Click to change thread">default</span>
-      <input id="thread-input" type="text" value="default" spellcheck="false" autocomplete="off">
+    <div class="sidebar-body" id="sidebar-body">
+      <span class="sidebar-section-label">Threads</span>
+      <div id="thread-list"></div>
     </div>
-  </header>
+    <button class="new-thread-btn" id="new-thread-btn">
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round">
+        <path d="M6 1v10M1 6h10"/>
+      </svg>
+      new thread
+    </button>
+  </aside>
 
-  <div class="messages" id="messages">
-    <div class="empty-state" id="empty-state">
-      <div class="empty-glyph">◈</div>
-      <span class="empty-label">ready</span>
-    </div>
-  </div>
+  <!-- Main -->
+  <div class="main">
+    <header class="main-header">
+      <span class="main-header-slash">thread /</span>
+      <span class="main-header-thread" id="active-thread-label">—</span>
+    </header>
 
-  <div class="input-area">
-    <div class="input-row">
-      <span class="input-prefix">›</span>
-      <textarea id="msg-input" rows="1" placeholder="say something…" autocomplete="off" spellcheck="false"></textarea>
-      <button class="send-btn" id="send-btn" title="Send (Enter)" aria-label="Send message">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2L8 8M14 2L10 14L8 8L2 6L14 2Z"/>
-        </svg>
-      </button>
+    <div class="messages" id="messages">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-glyph">◈</div>
+        <span class="empty-label">select a thread</span>
+      </div>
     </div>
-    <p class="input-hint">enter — send &nbsp;·&nbsp; shift+enter — newline</p>
+
+    <div class="input-area">
+      <div class="input-row">
+        <span class="input-prefix">›</span>
+        <textarea id="msg-input" rows="1" placeholder="say something…"
+                  autocomplete="off" spellcheck="false"></textarea>
+        <button class="send-btn" id="send-btn" title="Send (Enter)" aria-label="Send">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2L8 8M14 2L10 14L8 8L2 6L14 2Z"/>
+          </svg>
+        </button>
+      </div>
+      <p class="input-hint">enter — send &nbsp;·&nbsp; shift+enter — newline</p>
+    </div>
   </div>
 
 </div>
+
+<!-- Confirm dialog (reused for delete) -->
+<div class="confirm-overlay" id="confirm-overlay" style="display:none">
+  <div class="confirm-box">
+    <div class="confirm-title">Delete thread</div>
+    <div class="confirm-body" id="confirm-body"></div>
+    <div class="confirm-actions">
+      <button class="btn" id="confirm-cancel">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const API_BASE = 'http://localhost:8000';
 
-  const messagesEl   = document.getElementById('messages');
-  const inputEl      = document.getElementById('msg-input');
-  const sendBtn      = document.getElementById('send-btn');
-  const threadDisplay = document.getElementById('thread-display');
-  const threadInput  = document.getElementById('thread-input');
-  const emptyState   = document.getElementById('empty-state');
+  const messagesEl    = document.getElementById('messages');
+  const inputEl       = document.getElementById('msg-input');
+  const sendBtn       = document.getElementById('send-btn');
+  const threadListEl  = document.getElementById('thread-list');
+  const threadLabel   = document.getElementById('active-thread-label');
+  const newThreadBtn  = document.getElementById('new-thread-btn');
+  const emptyState    = document.getElementById('empty-state');
 
-  let isLoading    = false;
-  let thinkingEl   = null;
-  let emptyRemoved = false;
+  let activeThread  = null;
+  let isLoading     = false;
+  let thinkingEl    = null;
+  let emptyRemoved  = false;
 
-  // ── Thread editing ──────────────────────────────────────────────────────────
+  // ── Confirm dialog ──────────────────────────────────────────────────────────
 
-  threadDisplay.addEventListener('click', () => {
-    threadDisplay.style.display = 'none';
-    threadInput.style.display = 'inline-block';
-    threadInput.focus();
-    threadInput.select();
-  });
+  function confirm(message, onOk) {
+    const overlay   = document.getElementById('confirm-overlay');
+    const body      = document.getElementById('confirm-body');
+    const cancelBtn = document.getElementById('confirm-cancel');
+    const okBtn     = document.getElementById('confirm-ok');
 
-  threadInput.addEventListener('blur', commitThread);
-  threadInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter')  { e.preventDefault(); commitThread(); }
-    if (e.key === 'Escape') { threadInput.value = threadDisplay.textContent; commitThread(); }
-  });
+    body.innerHTML  = message;
+    overlay.style.display = 'flex';
 
-  function commitThread() {
-    const val = threadInput.value.trim() || 'default';
-    threadInput.value          = val;
-    threadDisplay.textContent  = val;
-    threadDisplay.style.display = '';
-    threadInput.style.display  = 'none';
+    const close = () => { overlay.style.display = 'none'; cancelBtn.onclick = null; okBtn.onclick = null; };
+    cancelBtn.onclick = close;
+    okBtn.onclick     = () => { close(); onOk(); };
   }
 
-  // ── Textarea auto-resize ────────────────────────────────────────────────────
+  // ── Thread list ─────────────────────────────────────────────────────────────
 
-  inputEl.addEventListener('input', resizeInput);
-
-  function resizeInput() {
-    inputEl.style.height = 'auto';
-    inputEl.style.height = Math.min(inputEl.scrollHeight, 150) + 'px';
+  async function loadThreads() {
+    try {
+      const res     = await fetch(`${API_BASE}/api/threads`);
+      const data    = await res.json();
+      renderThreadList(data.threads);
+    } catch {
+      threadListEl.innerHTML = '<div class="threads-empty">could not load</div>';
+    }
   }
 
-  // ── Send triggers ───────────────────────────────────────────────────────────
+  function renderThreadList(threads) {
+    threadListEl.innerHTML = '';
 
-  inputEl.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    if (!threads.length) {
+      threadListEl.innerHTML = '<div class="threads-empty">no threads yet</div>';
+      return;
+    }
+
+    threads.forEach(id => {
+      const item = buildThreadItem(id);
+      threadListEl.appendChild(item);
+    });
+
+    // Restore active selection if still present
+    if (activeThread && threads.includes(activeThread)) {
+      setActiveItem(activeThread);
+    }
+  }
+
+  function buildThreadItem(id) {
+    const item = document.createElement('div');
+    item.className   = 'thread-item';
+    item.dataset.id  = id;
+    item.innerHTML = `
+      <span class="thread-name">${escapeHtml(id)}</span>
+      <button class="thread-delete" title="Delete thread" aria-label="Delete ${escapeHtml(id)}">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 3h8M5 3V2h2v1M4 3v6h4V3"/>
+        </svg>
+      </button>`;
+
+    item.addEventListener('click', () => switchThread(id));
+    item.querySelector('.thread-delete').addEventListener('click', e => {
+      e.stopPropagation();
+      confirm(
+        `Delete thread <strong>${escapeHtml(id)}</strong>? This cannot be undone.`,
+        () => deleteThread(id)
+      );
+    });
+    return item;
+  }
+
+  function setActiveItem(id) {
+    document.querySelectorAll('.thread-item').forEach(el =>
+      el.classList.toggle('active', el.dataset.id === id)
+    );
+  }
+
+  // ── Switch thread ────────────────────────────────────────────────────────────
+
+  async function switchThread(id) {
+    if (activeThread === id) return;
+    activeThread  = id;
+    threadLabel.textContent = id;
+    setActiveItem(id);
+    clearMessages();
+
+    try {
+      const res  = await fetch(`${API_BASE}/api/chat/history?thread_id=${encodeURIComponent(id)}`);
+      const data = await res.json();
+
+      if (!data.messages.length) {
+        showEmpty('say something…');
+        return;
+      }
+
+      data.messages.forEach(msg => {
+        if (msg.role === 'user')      appendUser(msg.content, false);
+        else if (msg.role === 'assistant') appendAI(msg.content);
+      });
+    } catch {
+      showEmpty('could not load history');
+    }
+  }
+
+  // ── New thread ───────────────────────────────────────────────────────────────
+
+  newThreadBtn.addEventListener('click', () => {
+    // Replace button with inline input
+    newThreadBtn.style.display = 'none';
+
+    const row   = document.createElement('div');
+    row.className = 'new-thread-row';
+    row.innerHTML = `
+      <span class="new-thread-prefix">›</span>
+      <input id="new-thread-input" type="text" placeholder="thread name" autocomplete="off" spellcheck="false">`;
+    newThreadBtn.parentNode.insertBefore(row, newThreadBtn.nextSibling);
+
+    const input = row.querySelector('#new-thread-input');
+    input.focus();
+
+    const commit = () => {
+      const val = input.value.trim();
+      row.remove();
+      newThreadBtn.style.display = '';
+      if (!val) return;
+      addThread(val);
+    };
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter')  { e.preventDefault(); commit(); }
+      if (e.key === 'Escape') { row.remove(); newThreadBtn.style.display = ''; }
+    });
+    input.addEventListener('blur', commit);
   });
 
-  sendBtn.addEventListener('click', handleSend);
+  function addThread(id) {
+    // Remove "no threads" notice if present
+    const empty = threadListEl.querySelector('.threads-empty');
+    if (empty) empty.remove();
 
-  // ── Markdown renderer ───────────────────────────────────────────────────────
+    // Add to sidebar
+    const item = buildThreadItem(id);
+    threadListEl.appendChild(item);
+
+    // Switch to it
+    switchThread(id);
+  }
+
+  // ── Delete thread ─────────────────────────────────────────────────────────
+
+  async function deleteThread(id) {
+    try {
+      await fetch(`${API_BASE}/api/threads/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    } catch { /* best-effort */ }
+
+    // Remove from sidebar
+    const item = threadListEl.querySelector(`[data-id="${CSS.escape(id)}"]`);
+    if (item) item.remove();
+
+    // If it was active, clear main area
+    if (activeThread === id) {
+      activeThread = null;
+      threadLabel.textContent = '—';
+      clearMessages();
+      showEmpty('select a thread');
+    }
+
+    // Show empty notice if no threads left
+    if (!threadListEl.querySelector('.thread-item')) {
+      threadListEl.innerHTML = '<div class="threads-empty">no threads yet</div>';
+    }
+  }
+
+  // ── Markdown renderer ────────────────────────────────────────────────────────
 
   function renderMarkdown(raw) {
-    // 1. Escape HTML
     let t = raw
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
-    // 2. Fenced code blocks (must run before inline code)
     t = t.replace(/```(?:\w+)?\n?([\s\S]*?)```/g, (_, code) =>
       `<pre><code>${code.trimEnd()}</code></pre>`
     );
-
-    // 3. Inline code
-    t = t.replace(/`([^`\n]+)`/g, '<code>$1</code>');
-
-    // 4. Bold / italic
-    t = t.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
-    t = t.replace(/\*(.+?)\*/gs,     '<em>$1</em>');
-
-    // 5. Headings
-    t = t.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-    t = t.replace(/^## (.+)$/gm,  '<h2>$1</h2>');
-    t = t.replace(/^# (.+)$/gm,   '<h1>$1</h1>');
-
-    // 6. Horizontal rule
-    t = t.replace(/^---$/gm, '<hr>');
-
-    // 7. List items → wrap in <ul>
-    t = t.replace(/^[*-] (.+)$/gm, '<li>$1</li>');
+    t = t.replace(/`([^`\n]+)`/g,     '<code>$1</code>');
+    t = t.replace(/\*\*(.+?)\*\*/gs,  '<strong>$1</strong>');
+    t = t.replace(/\*(.+?)\*/gs,      '<em>$1</em>');
+    t = t.replace(/^### (.+)$/gm,     '<h3>$1</h3>');
+    t = t.replace(/^## (.+)$/gm,      '<h2>$1</h2>');
+    t = t.replace(/^# (.+)$/gm,       '<h1>$1</h1>');
+    t = t.replace(/^---$/gm,          '<hr>');
+    t = t.replace(/^[*-] (.+)$/gm,    '<li>$1</li>');
     t = t.replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
 
-    // 8. Paragraphs: split on blank lines, wrap non-block content
-    const BLOCK = /^<(h[1-6]|ul|ol|pre|hr|li)/;
+    const BLOCK = /^<(h[1-6]|ul|ol|pre|hr)/;
     t = t
       .split(/\n{2,}/)
       .map(chunk => {
         chunk = chunk.trim();
-        if (!chunk)          return '';
-        if (BLOCK.test(chunk)) return chunk;
+        if (!chunk || BLOCK.test(chunk)) return chunk;
         return `<p>${chunk.replace(/\n/g, '<br>')}</p>`;
       })
       .filter(Boolean)
@@ -540,21 +886,36 @@
     return t;
   }
 
-  // ── DOM helpers ─────────────────────────────────────────────────────────────
+  // ── DOM helpers ──────────────────────────────────────────────────────────────
 
-  function removeEmpty() {
-    if (!emptyRemoved && emptyState.parentNode) {
-      emptyState.remove();
-      emptyRemoved = true;
-    }
+  function clearMessages() {
+    messagesEl.innerHTML = '';
+    emptyRemoved = false;
+    thinkingEl   = null;
+  }
+
+  function showEmpty(label) {
+    messagesEl.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-glyph">◈</div>
+        <span class="empty-label">${escapeHtml(label)}</span>
+      </div>`;
+    emptyRemoved = false;
+  }
+
+  function removeEmptyState() {
+    if (emptyRemoved) return;
+    const el = messagesEl.querySelector('.empty-state');
+    if (el) el.remove();
+    emptyRemoved = true;
   }
 
   function scrollToBottom() {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  function appendUser(text) {
-    removeEmpty();
+  function appendUser(text, scroll = true) {
+    removeEmptyState();
     const row    = document.createElement('div');
     row.className = 'msg-user';
     const bubble  = document.createElement('div');
@@ -562,12 +923,20 @@
     bubble.textContent = text;
     row.appendChild(bubble);
     messagesEl.appendChild(row);
-    scrollToBottom();
+    if (scroll) scrollToBottom();
+  }
+
+  function appendAI(html) {
+    removeEmptyState();
+    const row = document.createElement('div');
+    row.className = 'msg-ai';
+    row.innerHTML = `<div class="avatar">D</div><div class="msg-ai-content">${html}</div>`;
+    messagesEl.appendChild(row);
   }
 
   function appendThinking() {
-    removeEmpty();
-    const row     = document.createElement('div');
+    removeEmptyState();
+    const row = document.createElement('div');
     row.className = 'msg-ai';
     row.innerHTML = `
       <div class="avatar">D</div>
@@ -588,20 +957,41 @@
 
   function appendError(msg) {
     if (thinkingEl) { thinkingEl.remove(); thinkingEl = null; }
-    const div     = document.createElement('div');
-    div.className = 'msg-error';
+    const div = document.createElement('div');
+    div.className   = 'msg-error';
     div.textContent = '⚠  ' + msg;
     messagesEl.appendChild(div);
     scrollToBottom();
   }
 
-  // ── Send ────────────────────────────────────────────────────────────────────
+  function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // ── Input ────────────────────────────────────────────────────────────────────
+
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 150) + 'px';
+  });
+
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  });
+
+  sendBtn.addEventListener('click', handleSend);
 
   async function handleSend() {
     const text = inputEl.value.trim();
     if (!text || isLoading) return;
 
-    const threadId = threadDisplay.textContent.trim() || 'default';
+    if (!activeThread) {
+      // Auto-create a default thread on first send
+      const id = 'default';
+      addThread(id);
+      await new Promise(r => setTimeout(r, 50)); // let switch settle
+    }
 
     isLoading          = true;
     sendBtn.disabled   = true;
@@ -615,7 +1005,7 @@
       const res = await fetch(`${API_BASE}/api/chat`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ message: text, thread_id: threadId }),
+        body:    JSON.stringify({ message: text, thread_id: activeThread }),
       });
 
       if (!res.ok) {
@@ -625,6 +1015,11 @@
 
       const data = await res.json();
       resolveThinking(renderMarkdown(data.response));
+
+      // Add thread to sidebar if it was just created (not yet on server list)
+      const exists = threadListEl.querySelector(`[data-id="${CSS.escape(activeThread)}"]`);
+      if (!exists) addThread(activeThread);
+
     } catch (err) {
       appendError(err.message || 'Could not reach the server.');
     } finally {
@@ -633,6 +1028,10 @@
       inputEl.focus();
     }
   }
+
+  // ── Init ─────────────────────────────────────────────────────────────────────
+
+  loadThreads();
 </script>
 </body>
 </html>

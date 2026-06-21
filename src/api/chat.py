@@ -1,8 +1,9 @@
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
-from src.api.models import ChatRequest, ChatResponse, HistoryResponse
+from src.api.models import ChatRequest, ChatResponse, HistoryResponse, ThreadListResponse
 from src.memory.extractor import extract_and_save
 from src.service.chat_service import ChatService
+from src.service.thread_service import ThreadService
 
 router = APIRouter()
 
@@ -25,3 +26,14 @@ def get_history(
 ) -> HistoryResponse:
     messages = service.get_history(thread_id)
     return HistoryResponse(thread_id=thread_id, messages=messages)
+
+
+@router.get("/threads")
+def list_threads(service: ThreadService = Depends()) -> ThreadListResponse:
+    return ThreadListResponse(threads=service.list_threads())
+
+
+@router.delete("/threads/{thread_id}", status_code=204)
+def delete_thread(thread_id: str, service: ThreadService = Depends()) -> None:
+    if not service.delete_thread(thread_id):
+        raise HTTPException(status_code=404, detail=f"Thread '{thread_id}' not found.")

@@ -18,3 +18,7 @@ class ChatMessage(BaseModel):
 class HistoryResponse(BaseModel):
     thread_id: str
     messages: list[ChatMessage]
+
+
+class ThreadListResponse(BaseModel):
+    threads: list[str]
